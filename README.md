@@ -1,6 +1,6 @@
 # val-dan-photobooth
 A web-based photobooth for guests to take and download photo strips.
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -19,12 +19,21 @@ A web-based photobooth for guests to take and download photo strips.
   }
 
   #video {
+    #video {
+  transform: scaleX(-1);
+}
     width: 300px;
     height: 400px;
-    border-radius: 12px;
+    border-radius: 5px;
     box-shadow: 0 12px 25px rgba(0,0,0,0.2);
   }
-
+  <div id="frames">
+  <div class="frame"></div>
+  <div class="frame"></div>
+  <div class="frame"></div>
+  <div class="frame"></div>
+</div>
+  
   #countdown {
     font-size: 72px;
     font-weight: bold;
