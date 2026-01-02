@@ -20,10 +20,7 @@
     height: 400px;
     border-radius: 12px;
     box-shadow: 0 12px 25px rgba(0,0,0,0.2);
-    transform: scaleX(-1); /* mirror preview for natural feel */
-  }
-photoCtx.filter = "grayscale(100%) contrast(1.2) brightness(1.05)";
-  
+    
   #countdown {
     font-size: 72px;
     font-weight: bold;
