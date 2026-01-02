@@ -4,7 +4,7 @@ A web-based photobooth for guests to take and download photo strips.
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Val & Dan’s Vow Renewal Photobooth</title>
+<title>Val & Dan’s Photobooth</title>
 
 <style>
   body {
