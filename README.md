@@ -1,10 +1,8 @@
-# val-dan-photobooth
-A web-based photobooth for guests to take and download photo strips.
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Val & Dan’s Photobooth</title>
+<title>Val & Dan’s Vow Renewal Photobooth</title>
 
 <style>
   body {
@@ -19,21 +17,13 @@ A web-based photobooth for guests to take and download photo strips.
   }
 
   #video {
-    #video {
-  transform: scaleX(-1);
-}
     width: 300px;
     height: 400px;
-    border-radius: 5px;
+    border-radius: 12px;
     box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+    transform: scaleX(-1); /* mirror preview for natural feel */
   }
-  <div id="frames">
-  <div class="frame"></div>
-  <div class="frame"></div>
-  <div class="frame"></div>
-  <div class="frame"></div>
-</div>
-  
+
   #countdown {
     font-size: 72px;
     font-weight: bold;
@@ -49,6 +39,25 @@ A web-based photobooth for guests to take and download photo strips.
   #container {
     position: relative;
     display: inline-block;
+  }
+
+  #frames {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    gap: 8px;
+  }
+
+  .frame {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #b99a5b;
+    background: transparent;
+  }
+
+  .frame.filled {
+    background: #b99a5b;
   }
 
   button, a {
@@ -88,6 +97,13 @@ A web-based photobooth for guests to take and download photo strips.
   <div id="countdown">3</div>
 </div>
 
+<div id="frames">
+  <div class="frame"></div>
+  <div class="frame"></div>
+  <div class="frame"></div>
+  <div class="frame"></div>
+</div>
+
 <br>
 <button id="start">Start Photobooth</button>
 <br>
@@ -103,6 +119,7 @@ const stripCanvas = document.getElementById("stripCanvas");
 const startBtn = document.getElementById("start");
 const countdown = document.getElementById("countdown");
 const download = document.getElementById("download");
+const frameBoxes = document.querySelectorAll(".frame");
 
 const photoCtx = photoCanvas.getContext("2d");
 const stripCtx = stripCanvas.getContext("2d");
@@ -115,16 +132,25 @@ navigator.mediaDevices.getUserMedia({ video: true })
   .then(stream => video.srcObject = stream)
   .catch(() => alert("Camera access required"));
 
+// Take photo function
 async function takePhoto() {
   photoCanvas.width = 600;
   photoCanvas.height = 800;
 
+  // Flip canvas back so saved image is correct
+  photoCtx.save();
+  photoCtx.scale(-1, 1); // flip horizontally
   photoCtx.filter = "sepia(30%) contrast(1.1) brightness(1.05)";
-  photoCtx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+  photoCtx.drawImage(video, -photoCanvas.width, 0, photoCanvas.width, photoCanvas.height);
+  photoCtx.restore();
 
   photos.push(photoCanvas.toDataURL("image/png"));
+
+  // Fill next progress frame
+  frameBoxes[photos.length - 1].classList.add("filled");
 }
 
+// Countdown before each shot
 async function countdownShot() {
   for (let i = 3; i > 0; i--) {
     countdown.innerText = i;
@@ -135,6 +161,7 @@ async function countdownShot() {
   await takePhoto();
 }
 
+// Create final photostrip
 function createStrip() {
   stripCanvas.width = 600;
   stripCanvas.height = 1600;
@@ -164,9 +191,11 @@ function createStrip() {
   });
 }
 
+// Start photobooth
 startBtn.addEventListener("click", async () => {
   photos.length = 0;
   download.style.display = "none";
+  frameBoxes.forEach(box => box.classList.remove("filled")); // reset frames
 
   for (let i = 0; i < PHOTO_COUNT; i++) {
     await countdownShot();
