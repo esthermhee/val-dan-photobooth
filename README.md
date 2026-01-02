@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -20,7 +21,9 @@
     height: 400px;
     border-radius: 12px;
     box-shadow: 0 12px 25px rgba(0,0,0,0.2);
-    
+    transform: scaleX(-1); /* mirror preview for natural feel */
+  }
+
   #countdown {
     font-size: 72px;
     font-weight: bold;
@@ -124,6 +127,10 @@ const stripCtx = stripCanvas.getContext("2d");
 const photos = [];
 const PHOTO_COUNT = 4;
 
+// Load overlay frame (replace with your own frame PNG with transparent center)
+const overlay = new Image();
+overlay.src = "https://i.imgur.com/Oz6yAIl.png";
+
 // Camera access
 navigator.mediaDevices.getUserMedia({ video: true })
   .then(stream => video.srcObject = stream)
@@ -131,16 +138,26 @@ navigator.mediaDevices.getUserMedia({ video: true })
 
 // Take photo function
 async function takePhoto() {
-  photoCanvas.width = 600;
-  photoCanvas.height = 800;
+  const photoWidth = 480;
+  const photoHeight = 600;
 
-  // Flip canvas back so saved image is correct
+  photoCanvas.width = photoWidth;
+  photoCanvas.height = photoHeight;
+
+  // Draw video flipped horizontally for correct final image
   photoCtx.save();
-  photoCtx.scale(-1, 1); // flip horizontally
-  photoCtx.filter = "sepia(30%) contrast(1.1) brightness(1.05)";
-  photoCtx.drawImage(video, -photoCanvas.width, 0, photoCanvas.width, photoCanvas.height);
+  photoCtx.scale(-1, 1);
+  photoCtx.drawImage(video, -photoWidth, 0, photoWidth, photoHeight);
   photoCtx.restore();
 
+  // Apply black & white filter
+  photoCtx.filter = "grayscale(100%) contrast(1.2) brightness(1.05)";
+  photoCtx.drawImage(photoCanvas, 0, 0);
+
+  // Draw overlay frame
+  photoCtx.drawImage(overlay, 0, 0, photoWidth, photoHeight);
+
+  // Save photo
   photos.push(photoCanvas.toDataURL("image/png"));
 
   // Fill next progress frame
@@ -162,10 +179,12 @@ async function countdownShot() {
 function createStrip() {
   const photoWidth = 480;
   const photoHeight = 600;
-  const gap = 20; // gap between photos
+  const gap = 20;
+  const sidePadding = 20;
 
-  stripCanvas.width = photoWidth + 40; // small side padding
-  stripCanvas.height = photoHeight * PHOTO_COUNT + gap * (PHOTO_COUNT - 1) + 80; // top/bottom padding
+  stripCanvas.width = photoWidth + sidePadding * 2;
+  stripCanvas.height = photoHeight * PHOTO_COUNT + gap * (PHOTO_COUNT - 1) + sidePadding * 2;
+
   stripCtx.fillStyle = "#fff";
   stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
 
@@ -173,16 +192,15 @@ function createStrip() {
     const img = new Image();
     img.src = src;
     img.onload = () => {
-      const x = 20; // left padding
-      const y = 20 + i * (photoHeight + gap);
+      const x = sidePadding;
+      const y = sidePadding + i * (photoHeight + gap);
       stripCtx.drawImage(img, x, y, photoWidth, photoHeight);
 
-      // Overlay frame per photo
+      // Draw overlay for each photo
       stripCtx.drawImage(overlay, x, y, photoWidth, photoHeight);
-      photoCtx.filter = "grayscale(100%) contrast(1.2) brightness(1.05)";
 
+      // Add bottom text after last photo
       if (i === photos.length - 1) {
-        // Add text at bottom
         stripCtx.fillStyle = "#000";
         stripCtx.textAlign = "center";
         stripCtx.font = "36px serif";
@@ -203,7 +221,7 @@ function createStrip() {
 startBtn.addEventListener("click", async () => {
   photos.length = 0;
   download.style.display = "none";
-  frameBoxes.forEach(box => box.classList.remove("filled")); // reset frames
+  frameBoxes.forEach(box => box.classList.remove("filled"));
 
   for (let i = 0; i < PHOTO_COUNT; i++) {
     await countdownShot();
@@ -216,3 +234,4 @@ startBtn.addEventListener("click", async () => {
 
 </body>
 </html>
+
