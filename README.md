@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -163,8 +162,12 @@ async function countdownShot() {
 
 // Create final photostrip
 function createStrip() {
-  stripCanvas.width = 600;
-  stripCanvas.height = 1600;
+  const photoWidth = 480;
+  const photoHeight = 600;
+  const gap = 20; // gap between photos
+
+  stripCanvas.width = photoWidth + 40; // small side padding
+  stripCanvas.height = photoHeight * PHOTO_COUNT + gap * (PHOTO_COUNT - 1) + 80; // top/bottom padding
   stripCtx.fillStyle = "#fff";
   stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
 
@@ -172,15 +175,21 @@ function createStrip() {
     const img = new Image();
     img.src = src;
     img.onload = () => {
-      stripCtx.drawImage(img, 50, i * 350 + 50, 500, 300);
+      const x = 20; // left padding
+      const y = 20 + i * (photoHeight + gap);
+      stripCtx.drawImage(img, x, y, photoWidth, photoHeight);
+
+      // Overlay frame per photo
+      stripCtx.drawImage(overlay, x, y, photoWidth, photoHeight);
 
       if (i === photos.length - 1) {
+        // Add text at bottom
         stripCtx.fillStyle = "#000";
         stripCtx.textAlign = "center";
         stripCtx.font = "36px serif";
-        stripCtx.fillText("Val & Dan", 300, 1450);
+        stripCtx.fillText("Val & Dan", stripCanvas.width / 2, stripCanvas.height - 50);
         stripCtx.font = "24px serif";
-        stripCtx.fillText("Vow Renewal", 300, 1500);
+        stripCtx.fillText("Vow Renewal", stripCanvas.width / 2, stripCanvas.height - 15);
 
         const finalImage = stripCanvas.toDataURL("image/png");
         download.href = finalImage;
